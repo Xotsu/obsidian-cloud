@@ -2,8 +2,10 @@
   "name": "obsidian-cloud",
   "version": "1.0.0",
   "description": "A simple plugin to store and sync your Obsidian files across devices using Dropbox",
-  "main": "main.ts",
-  "scripts": {},
+  "main": "main.js",
+  "scripts": {
+    "dev": "npx tsc --watch"
+  },
   "repository": {
     "url": "https://github.com/Xotsu/obsidian-cloud"
   },
