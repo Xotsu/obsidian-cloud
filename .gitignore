@@ -2,9 +2,7 @@
 .env
 
 # Ignore Node.js dependencies
-
 node_modules/
 
 # Ignore build files
-
-*.js
+main.js

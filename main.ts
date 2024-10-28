@@ -29,7 +29,7 @@ export default class ObsidianCloud extends Plugin{
   }
 
   async onunload(){
-    console.log("Final Unload")
+    console.log("Unload")
   }
   
   // Creates persistent settings for encryption password & dropbox access token

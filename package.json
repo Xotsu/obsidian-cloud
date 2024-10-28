@@ -4,7 +4,8 @@
   "description": "A simple plugin to store and sync your Obsidian files across devices using Dropbox",
   "main": "main.js",
   "scripts": {
-    "dev": "npx tsc --watch"
+    "dev": "webpack --config webpack.config.js --watch",
+    "build": "webpack --config webpack.config.js"
   },
   "repository": {
     "url": "https://github.com/Xotsu/obsidian-cloud"
@@ -20,6 +21,10 @@
     "obsidian": "^1.7.2"
   },
   "devDependencies": {
-    "typescript": "^5.6.3"
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.6.3",
+    "webpack": "^5.95.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-node-externals": "^3.0.0"
   }
 }
