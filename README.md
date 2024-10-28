@@ -13,13 +13,13 @@ A plugin that requires the lowest ammount of effort to have free cloud storage s
 
 # Requirements
 
-- [] Sync with Dropbox on load / exit
-- [] Work on desktop and mobile
-- [] Encrypt files
-- [] Encryption key management
-- [] Authentication with Dropbox
-- [] Error handling / User notification of failure
-- [] Offline syncing - queue changes if user is offline
-- [] Conflict resolution
-- [] Write up the docs
+- [ ] Sync with Dropbox on load / exit
+- [ ] Work on desktop and mobile
+- [ ] Encrypt files
+- [ ] Encryption key management
+- [ ] Authentication with Dropbox
+- [ ] Error handling / User notification of failure
+- [ ] Offline syncing - queue changes if user is offline
+- [ ] Conflict resolution
+- [ ] Write up the docs
 - TBD
