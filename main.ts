@@ -1,6 +1,6 @@
 import { Plugin } from "obsidian"
 import { ObsidianCloudSettingTab } from "./src/settings"
-import { doAuth, getAccessTokenFromUrl, hasRedirectedFromAuth, getDropboxInstance } from "./src/auth"
+import { doAuth, handleRedirectForToken } from "./src/auth"
 
 interface ObsidianCloudSettings {
   encryptionPassword: string
@@ -29,11 +29,26 @@ export default class ObsidianCloud extends Plugin{
     console.log("Initial Load")
 
     await this.loadSettings()
+    this.addSettingTab(new ObsidianCloudSettingTab(this.app, this))
+    
     this.dropboxBackupsTokenStore = JSON.parse(
       await this.app.vault.adapter.read(
         this.dropboxBackupsTokenStorePath
       )
-    ) 
+    )
+
+    if(this.dropboxBackupsTokenStore){
+      this.dropboxBackupsTokenStore = await this.app.vault.adapter.read(
+        this.dropboxBackupsTokenStorePath
+      )
+    }
+
+    // Handle the Dropbox callback
+    this.registerObsidianProtocolHandler(
+      this.redirectUri,
+      async (params) => await this.doAuth(params)
+    )
+
     const token = handleRedirectForToken()
     
     // Stores token if redirected from auth
@@ -50,16 +65,7 @@ export default class ObsidianCloud extends Plugin{
       // Sync with vault - TO BE IMPLEMENTED
       // await this.syncVaultToDropbox(dopbox)
     }
-
-
-
-    this.addSettingTab(new ObsidianCloudSettingTab(this.app, this))
     
-    // Handle the Dropbox callback
-    this.registerObsidianProtocolHandler(
-      this.redirectUri,
-      async (params) => await this.doAuth(params)
-    )
  }
 
   async onunload(){
