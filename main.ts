@@ -46,7 +46,7 @@ export default class ObsidianCloud extends Plugin{
     // Handle the Dropbox callback
     this.registerObsidianProtocolHandler(
       this.redirectUri,
-      async (params) => await this.doAuth(params)
+      async (params) => await doAuth(params)
     )
 
     const token = handleRedirectForToken()
