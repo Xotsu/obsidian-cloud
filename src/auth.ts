@@ -8,30 +8,31 @@ type AccessTokenStore = {
     refresh_token: string
 }
 
-export class DropboxAuthService{
-  private dropboxAuth: DropboxAuth;
-  private accessTokenStore: AccessTokenStore | null;
-  private dropbox: Dropbox;
+export default class DropboxAuthService{
+  private dropboxAuth?: DropboxAuth;
+  private accessTokenStore?: AccessTokenStore;
+  private dropbox?: Dropbox;
   private redirectUri: string;
-  private authUrl: string;
+  private authUrl?: string;
   private dropboxCodeVerifier: string;
-  private writeTokenStoreToPath: Promise<void>;
+  private writeTokenStoreToPath: (dropboxTokenStore: AccessTokenStore) => Promise<void>;
 
-  constructor(accessTokenStore: AccessTokenStore | null, redirectUri: string, writeTokenStoreToPath: Promise<void>){
+  constructor(accessTokenStore: AccessTokenStore | undefined, redirectUri: string, writeTokenStoreToPath: (dropboxTokenStore: AccessTokenStore) => Promise<void>){
     this.accessTokenStore = accessTokenStore;
     this.redirectUri = redirectUri;
     this.writeTokenStoreToPath = writeTokenStoreToPath
+    this.dropboxCodeVerifier = "" // TODO FIX THIS!!!
   }
 
-  public getDropbox(): Dropbox{
+  public getDropbox(): Dropbox | undefined {
     return this.dropbox
   }
 
-  public async attemptAuth(){
+  public async attemptAuth() {
     try {
       if (this.accessTokenStore){
         console.log("ObsidianCloud: Attempting stored auth")
-        await this.doStoredAuth(accessTokenStore);
+        await this.doStoredAuth();
       } else {
         console.log("ObsidianCloud: Attempting auth setup")
         await this.setupAuth();
@@ -43,12 +44,12 @@ export class DropboxAuthService{
     console.log("ObsidianCloud: Auth complete")
   }
 
-  private async doStoredAuth(): Promise<void> {
+  private async doStoredAuth() {
     if(!this.dropboxAuth){
       this.dropboxAuth = new DropboxAuth({
         clientId: DROPBOX_APP_KEY,
-        accessToken: this.accessTokenStore.access_token,
-        refreshToken: this.accessTokenStore.refresh_token,
+        accessToken: this.accessTokenStore?.access_token,
+        refreshToken: this.accessTokenStore?.refresh_token,
       });
     }
 
@@ -61,7 +62,7 @@ export class DropboxAuthService{
     // TODO Add data sync here
   }
 
-  private async setupAuth(): Promise<void> {
+  private async setupAuth() {
     this.dropboxAuth = new DropboxAuth({
       clientId: DROPBOX_APP_KEY,
     })
@@ -85,11 +86,11 @@ export class DropboxAuthService{
 
   }
 
-  public async doAuth(params: any): Promise<void> {
+  public async doAuth(params: any) {
 
-    this.dropboxAuth.setCodeVerifier(this.dropboxCodeVerifier)
+    this.dropboxAuth?.setCodeVerifier(this.dropboxCodeVerifier)
 
-    const accessTokenResponse = await this.dropboxAuth.getAccessTokenFromCode(
+    const accessTokenResponse = await this.dropboxAuth?.getAccessTokenFromCode(
       this.redirectUri,
       params.code
     )
@@ -98,10 +99,10 @@ export class DropboxAuthService{
 
     await this.writeTokenStoreToPath(accessTokenResponseResult)
 
-    this.dropboxAuth.setAccessToken(accessTokenResponseResult?.access_token)
+    this.dropboxAuth?.setAccessToken(accessTokenResponseResult?.access_token)
 
     this.dropbox = new Dropbox({
-      auth: dropboxAuth
+      auth: this.dropboxAuth
     })
 
     // TODO Add data sync here

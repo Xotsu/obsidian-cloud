@@ -1,13 +1,15 @@
 import ObsidianCloud from "../main"
+import DropboxAuthService from "./auth"
 import {App, PluginSettingTab, Setting} from "obsidian"
-import { doAuth } from "./auth"
 
 export class ObsidianCloudSettingTab extends PluginSettingTab {
   plugin: ObsidianCloud
+  dropboxAuthService: DropboxAuthService
   
-  constructor(app: App, plugin: ObsidianCloud) {
+  constructor(app: App, plugin: ObsidianCloud, dropboxAuthService: DropboxAuthService) {
     super(app, plugin)
     this.plugin = plugin
+    this.dropboxAuthService = dropboxAuthService
   }
   
   display(): void{
@@ -36,7 +38,7 @@ export class ObsidianCloudSettingTab extends PluginSettingTab {
                .setButtonText("Authenticate")
                .onClick(async () =>{
                  console.log("Test Authenticate Button")
-                 await doAuth()
+                 await this.dropboxAuthService.attemptAuth()
                }))
   }
 }

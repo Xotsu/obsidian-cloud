@@ -1,6 +1,6 @@
 import { Plugin } from "obsidian"
 import { ObsidianCloudSettingTab } from "./src/settings"
-import { DropboxAuthService } from "./src/auth"
+import DropboxAuthService from "./src/auth"
 
 interface ObsidianCloudSettings {
   encryptionPassword: string
@@ -23,9 +23,8 @@ export default class ObsidianCloud extends Plugin {
   pluginName = "obsidian-cloud"
   redirectUri = `obsidian://${this.pluginName}`
   dropboxTokenStorePath = `${this.manifest.dir}/.__dropbox_token_store__`
-  dropboxTokenStore: AccessTokenStore;
-  token: string;
-  dropboxAuthService: DropboxAuthService;
+  dropboxTokenStore?: AccessTokenStore;
+  dropboxAuthService?: DropboxAuthService;
 
   async writeTokenStoreToPath(dropboxTokenStore: AccessTokenStore): Promise<void> {
     this.dropboxTokenStore = dropboxTokenStore
@@ -38,30 +37,30 @@ export default class ObsidianCloud extends Plugin {
 
   async onload() {
     console.log("Initial Load")
-
+   
     await this.loadSettings()
-    this.addSettingTab(new ObsidianCloudSettingTab(this.app, this))
-    
-    this.dropboxTokenStore = JSON.parse(
-      await this.app.vault.adapter.read(
-        this.dropboxTokenStorePath
-      )
-    )
 
-    if(this.dropboxTokenStore){
-      this.dropboxTokenStore = await this.app.vault.adapter.read(
+    if(
+      await this.app.vault.adapter.exists(
         this.dropboxTokenStorePath
+      ))
+    {
+      this.dropboxTokenStore = JSON.parse(
+        await this.app.vault.adapter.read(
+          this.dropboxTokenStorePath
+        )
       )
     }
 
     // TODO Add a manual backup button
 
-    this.dropboxAuthService = DropboxAuthService(this.dropboxTokenStore, this.redirectUri, writeTokenStoreToPath)
-    
+    this.dropboxAuthService = new DropboxAuthService(this.dropboxTokenStore, this.redirectUri, this.writeTokenStoreToPath)
+    this.addSettingTab(new ObsidianCloudSettingTab(this.app, this, this.dropboxAuthService))
+
     // Handle the Dropbox callback
     this.registerObsidianProtocolHandler(
       this.redirectUri,
-      async (params) => {await this.dropboxAuthService.doAuth(params)};
+      async (params) => {await this.dropboxAuthService?.doAuth(params)},
     );
 
     await this.dropboxAuthService.attemptAuth();
@@ -72,7 +71,7 @@ export default class ObsidianCloud extends Plugin {
           try {
             // TODO await attemptSync();
           } catch (ignore){
-            await this.dropboxAuthService.attemptAuth();
+            await this.dropboxAuthService?.attemptAuth();
           }
         },
         60000 * 5 // 1 min = 60000
