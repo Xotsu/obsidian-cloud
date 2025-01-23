@@ -1,6 +1,6 @@
 import { Plugin } from "obsidian"
 import { ObsidianCloudSettingTab } from "./src/settings"
-import { doAuth, handleRedirectForToken } from "./src/auth"
+import { doAuth, attemptAuth } from "./src/auth"
 
 interface ObsidianCloudSettings {
   encryptionPassword: string
@@ -24,6 +24,7 @@ export default class ObsidianCloud extends Plugin{
   redirectUri = `obsidian://${pluginName}`
   dropboxTokenStorePath = `${this.manifest.dir}/.__dropbox_token_store__`
   dropboxTokenStore: accessTokenStore;
+  token: string;
 
   async onload(){
     console.log("Initial Load")
@@ -46,25 +47,44 @@ export default class ObsidianCloud extends Plugin{
     // Handle the Dropbox callback
     this.registerObsidianProtocolHandler(
       this.redirectUri,
-      async (params) => await doAuth(params)
+      async (params) => this.token = await doAuth(params)
+    )
+    
+    // TODO Add a manual backup button
+
+    
+    attemptAuth();
+
+    this.registerInterval(
+      window.setInterval(
+        async () => {
+          try {
+            // TODO await attemptSync();
+          } catch (ignore){
+            attemptAuth();
+          }
+        },
+        60000 * 5 // 1 min = 60000
+      )
     )
 
-    const token = handleRedirectForToken()
-    
-    // Stores token if redirected from auth
-    if(token){
-      this.settings.dropboxAccessToken = token
-      await this.saveSettings()
-    }
 
-    if (!this.settings.dropboxAccessToken){
-      await doAuth()
-    } else {
-      console.log("Authenticated with Dropbox!")
-      const dropbox = getDropboxInstance(this.settings.dropboxAccessToken)
-      // Sync with vault - TO BE IMPLEMENTED
-      // await this.syncVaultToDropbox(dopbox)
-    }
+    //const token = handleRedirectForToken()
+    
+    //// Stores token if redirected from auth
+    //if(token){
+    //  this.settings.dropboxAccessToken = token
+    //  await this.saveSettings()
+    //}
+    //
+    //if (!this.settings.dropboxAccessToken){
+    //  await doAuth()
+    //} else {
+    //  console.log("Authenticated with Dropbox!")
+    //  const dropbox = getDropboxInstance(this.settings.dropboxAccessToken)
+    //  // Sync with vault - TO BE IMPLEMENTED
+    //  // await this.syncVaultToDropbox(dopbox)
+    //}
     
  }
 
