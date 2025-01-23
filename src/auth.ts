@@ -27,7 +27,7 @@ export class DropboxAuthService{
     return this.dropbox
   }
 
-  public async function attemptAuth(){
+  public async attemptAuth(){
     try {
       if (this.accessTokenStore){
         console.log("ObsidianCloud: Attempting stored auth")
@@ -43,12 +43,12 @@ export class DropboxAuthService{
     console.log("ObsidianCloud: Auth complete")
   }
 
-  private async function doStoredAuth(): Promise<void> {
+  private async doStoredAuth(): Promise<void> {
     if(!this.dropboxAuth){
       this.dropboxAuth = new DropboxAuth({
         clientId: DROPBOX_APP_KEY,
-        accessToken: this.tokenStore.access_token,
-        refreshToken: this.tokenStore.refresh_token,
+        accessToken: this.accessTokenStore.access_token,
+        refreshToken: this.accessTokenStore.refresh_token,
       });
     }
 
@@ -61,7 +61,7 @@ export class DropboxAuthService{
     // TODO Add data sync here
   }
 
-  private async function setupAuth(): Promise<void> {
+  private async setupAuth(): Promise<void> {
     this.dropboxAuth = new DropboxAuth({
       clientId: DROPBOX_APP_KEY,
     })
@@ -85,7 +85,7 @@ export class DropboxAuthService{
 
   }
 
-  public async function doAuth(params: any): Promise<void> {
+  public async doAuth(params: any): Promise<void> {
 
     this.dropboxAuth.setCodeVerifier(this.dropboxCodeVerifier)
 
@@ -107,7 +107,7 @@ export class DropboxAuthService{
     // TODO Add data sync here
   }
 
-  //public function handleRedirectForToken(): string | null {
+  //public handleRedirectForToken(): string | null {
   //
   //  const hash = window.location.hash
   //  const params = new URLSearchParams(hash.slice(1))

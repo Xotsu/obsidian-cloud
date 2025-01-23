@@ -17,17 +17,17 @@ const DEFAULT_SETTINGS: ObsidianCloudSettings = {
   dropboxAccessToken: ""
 }
 
-export default class ObsidianCloud extends Plugin{
+export default class ObsidianCloud extends Plugin {
   // Initialising with default settings because TS screams at me, didn't want to definite assignment with !
   settings: ObsidianCloudSettings = DEFAULT_SETTINGS
   pluginName = "obsidian-cloud"
-  redirectUri = `obsidian://${pluginName}`
+  redirectUri = `obsidian://${this.pluginName}`
   dropboxTokenStorePath = `${this.manifest.dir}/.__dropbox_token_store__`
   dropboxTokenStore: AccessTokenStore;
   token: string;
   dropboxAuthService: DropboxAuthService;
 
-  async function writeTokenStoreToPath(dropboxTokenStore: AccessTokenStore): Promise<void> {
+  async writeTokenStoreToPath(dropboxTokenStore: AccessTokenStore): Promise<void> {
     this.dropboxTokenStore = dropboxTokenStore
 
     await this.app.vault.adapter.write(
@@ -36,21 +36,21 @@ export default class ObsidianCloud extends Plugin{
     )
   }
 
-  async onload(){
+  async onload() {
     console.log("Initial Load")
 
     await this.loadSettings()
     this.addSettingTab(new ObsidianCloudSettingTab(this.app, this))
     
-    this.dropboxBackupsTokenStore = JSON.parse(
+    this.dropboxTokenStore = JSON.parse(
       await this.app.vault.adapter.read(
-        this.dropboxBackupsTokenStorePath
+        this.dropboxTokenStorePath
       )
     )
 
-    if(this.dropboxBackupsTokenStore){
-      this.dropboxBackupsTokenStore = await this.app.vault.adapter.read(
-        this.dropboxBackupsTokenStorePath
+    if(this.dropboxTokenStore){
+      this.dropboxTokenStore = await this.app.vault.adapter.read(
+        this.dropboxTokenStorePath
       )
     }
 
@@ -61,10 +61,10 @@ export default class ObsidianCloud extends Plugin{
     // Handle the Dropbox callback
     this.registerObsidianProtocolHandler(
       this.redirectUri,
-      async (params) => await this.dropboxAuthService.doAuth(params);
-    )
+      async (params) => {await this.dropboxAuthService.doAuth(params)};
+    );
 
-    this.dropboxAuthService.attemptAuth();
+    await this.dropboxAuthService.attemptAuth();
 
     this.registerInterval(
       window.setInterval(
@@ -72,7 +72,7 @@ export default class ObsidianCloud extends Plugin{
           try {
             // TODO await attemptSync();
           } catch (ignore){
-            this.dropboxAuthService.attemptAuth();
+            await this.dropboxAuthService.attemptAuth();
           }
         },
         60000 * 5 // 1 min = 60000
@@ -96,11 +96,10 @@ export default class ObsidianCloud extends Plugin{
     //  // Sync with vault - TO BE IMPLEMENTED
     //  // await this.syncVaultToDropbox(dopbox)
     //}
-    
- }
+  }
 
   async onunload(){
-    console.log("Unload")
+    console.log("Unloading ObsidianCloud")
   }
   
   // Creates persistent settings for encryption password & dropbox access token
