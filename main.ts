@@ -1,13 +1,13 @@
 import { Plugin } from "obsidian"
 import { ObsidianCloudSettingTab } from "./src/settings"
-import { doAuth, attemptAuth } from "./src/auth"
+import { DropboxAuthService } from "./src/auth"
 
 interface ObsidianCloudSettings {
   encryptionPassword: string
   dropboxAccessToken: string
 }
 
-type accessTokenStore = {
+type AccessTokenStore = {
     access_token: string
     refresh_token: string
 }
@@ -23,8 +23,9 @@ export default class ObsidianCloud extends Plugin{
   pluginName = "obsidian-cloud"
   redirectUri = `obsidian://${pluginName}`
   dropboxTokenStorePath = `${this.manifest.dir}/.__dropbox_token_store__`
-  dropboxTokenStore: accessTokenStore;
+  dropboxTokenStore: AccessTokenStore;
   token: string;
+  dropboxAuthService: DropboxAuthService;
 
   async onload(){
     console.log("Initial Load")
@@ -52,8 +53,9 @@ export default class ObsidianCloud extends Plugin{
     
     // TODO Add a manual backup button
 
-    
-    attemptAuth();
+    this.dropboxAuthService = DropboxAuthService(this.dropboxTokenStore, this.redirectUri)
+
+    this.dropboxAuthService.attemptAuth();
 
     this.registerInterval(
       window.setInterval(
@@ -61,7 +63,7 @@ export default class ObsidianCloud extends Plugin{
           try {
             // TODO await attemptSync();
           } catch (ignore){
-            attemptAuth();
+            this.dropboxAuthService.attemptAuth();
           }
         },
         60000 * 5 // 1 min = 60000
