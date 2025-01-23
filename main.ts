@@ -27,6 +27,15 @@ export default class ObsidianCloud extends Plugin{
   token: string;
   dropboxAuthService: DropboxAuthService;
 
+  async function writeTokenStoreToPath(dropboxTokenStore: AccessTokenStore): Promise<void> {
+    this.dropboxTokenStore = dropboxTokenStore
+
+    await this.app.vault.adapter.write(
+      this.dropboxTokenStorePath,
+      JSON.stringify(dropboxTokenStore)
+    )
+  }
+
   async onload(){
     console.log("Initial Load")
 
@@ -45,15 +54,15 @@ export default class ObsidianCloud extends Plugin{
       )
     }
 
+    // TODO Add a manual backup button
+
+    this.dropboxAuthService = DropboxAuthService(this.dropboxTokenStore, this.redirectUri, writeTokenStoreToPath)
+    
     // Handle the Dropbox callback
     this.registerObsidianProtocolHandler(
       this.redirectUri,
-      async (params) => this.token = await doAuth(params)
+      async (params) => await this.dropboxAuthService.doAuth(params);
     )
-    
-    // TODO Add a manual backup button
-
-    this.dropboxAuthService = DropboxAuthService(this.dropboxTokenStore, this.redirectUri)
 
     this.dropboxAuthService.attemptAuth();
 

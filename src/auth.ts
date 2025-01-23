@@ -15,10 +15,16 @@ export class DropboxAuthService{
   private redirectUri: string;
   private authUrl: string;
   private dropboxCodeVerifier: string;
+  private writeTokenStoreToPath: Promise<void>;
 
-  constructor(accessTokenStore: AccessTokenStore | null, redirectUri: string){
+  constructor(accessTokenStore: AccessTokenStore | null, redirectUri: string, writeTokenStoreToPath: Promise<void>){
     this.accessTokenStore = accessTokenStore;
     this.redirectUri = redirectUri;
+    this.writeTokenStoreToPath = writeTokenStoreToPath
+  }
+
+  public getDropbox(): Dropbox{
+    return this.dropbox
   }
 
   public async function attemptAuth(){
@@ -37,7 +43,7 @@ export class DropboxAuthService{
     console.log("ObsidianCloud: Auth complete")
   }
 
-  public async function doStoredAuth(): Promise<void> {
+  private async function doStoredAuth(): Promise<void> {
     if(!this.dropboxAuth){
       this.dropboxAuth = new DropboxAuth({
         clientId: DROPBOX_APP_KEY,
@@ -51,9 +57,11 @@ export class DropboxAuthService{
     this.dropbox = new Dropbox({
       auth: this.dropboxAuth,
     })
+
+    // TODO Add data sync here
   }
 
-  public async function setupAuth(): Promise<void> {
+  private async function setupAuth(): Promise<void> {
     this.dropboxAuth = new DropboxAuth({
       clientId: DROPBOX_APP_KEY,
     })
@@ -77,99 +85,40 @@ export class DropboxAuthService{
 
   }
 
-  public async function doAuth(dropboxAuth: DropboxAuth, redirectUri: string, params: any){
+  public async function doAuth(params: any): Promise<void> {
 
-    dropboxAuth.setCodeVerifier(dropboxAuth.getCodeVerifier())
+    this.dropboxAuth.setCodeVerifier(this.dropboxCodeVerifier)
 
-    const accessTokenResponse = await dropboxAuth.getAccessTokenFromCode(
-      redirectUri,
+    const accessTokenResponse = await this.dropboxAuth.getAccessTokenFromCode(
+      this.redirectUri,
       params.code
     )
     
     const accessTokenResponseResult = accessTokenResponse?.result as AccessTokenStore
 
-    await this.app.vault.adapter.write(
-      this.dropboxTokenStorePath
-      JSON.stringify(accessTokenResponseResult)
-    )
+    await this.writeTokenStoreToPath(accessTokenResponseResult)
 
-    dropboxAuth.setAccessToken(accessTokenResponseResult?.access_token)
+    this.dropboxAuth.setAccessToken(accessTokenResponseResult?.access_token)
 
-    return new Dropbox({
+    this.dropbox = new Dropbox({
       auth: dropboxAuth
     })
 
+    // TODO Add data sync here
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  public async function authenticateLocally(dropboxAuth: DropboxAuth){
-    dropboxAuth.access_token = "" 
-    dropboxAuth.refresh_token = ""
-
-    await dropboxAuth.checkAndRefreshAccessToken()
-
-    return new Dropbox({
-      auth: dropboxAuth
-    })
-  }
-
-  public async function authenticateWithDropbox(dropboxAuth: DropboxAuth, redirectUri: string) : string {
-
-    
-    const authUrl = String(
-      await dropboxAuth.getAuthenticationUrl(
-        redirectUri,
-        undefined,
-        "code",
-        "offline",
-        undefined,
-        undefined,
-        true
-      )
-    )
-
-    window.location.assign(authUrl)
-  }
-
-
-
-  public function handleRedirectForToken(): string | null {
-
-    const hash = window.location.hash
-    const params = new URLSearchParams(hash.slice(1))
-    const accessToken = params.get("access_token")
-    
-    if(accessToken){
-      localStorage.setItem("dropboxAccessToken", accessToken)
-      return accessToken
-    } else {
-      console.error("Failed to retrieve access token from URL hash")
-      return null
-    }
-
-  }
-
-  public function getDropboxAuthInstance(){
-
-    return new DropboxAuth({ client_id: DROPBOX_APP_KEY})
-
-  }
+  //public function handleRedirectForToken(): string | null {
+  //
+  //  const hash = window.location.hash
+  //  const params = new URLSearchParams(hash.slice(1))
+  //  const accessToken = params.get("access_token")
+  //
+  //  if(accessToken){
+  //    localStorage.setItem("dropboxAccessToken", accessToken)
+  //    return accessToken
+  //  } else {
+  //    console.error("Failed to retrieve access token from URL hash")
+  //    return null
+  //  }
+  //}
 }
