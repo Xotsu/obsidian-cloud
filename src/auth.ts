@@ -8,9 +8,25 @@ type accessTokenStore = {
     refresh_token: string
 }
 
+export async function attemptAuth(tokenStore: accessTokenStore){
+  try {
+    if (accessTokenStore){
+      console.log("ObsidianCloud: Attempting stored auth")
+      await doStoredAuth();
+    } else {
+      console.log("ObsidianCloud: Attempting auth setup")
+      await setupAuth();
+    }
+    
+  } catch (error) {
+    console.error("ObsidianCloud: Auth error: ", error);
+  }
+  console.log("ObsidianCloud: Auth complete")
+}
+
 export async function authenticateLocally(dropboxAuth: DropboxAuth){
-  dropboxAuth.access_token = 
-  dropboxAuth.refresh_token = 
+  dropboxAuth.access_token = "" 
+  dropboxAuth.refresh_token = ""
 
   await dropboxAuth.checkAndRefreshAccessToken()
 
