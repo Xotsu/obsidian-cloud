@@ -1,5 +1,4 @@
 const path = require("path")
-const nodeExternals = require("webpack-node-externals")
 
 module.exports = {
   entry: "./main.ts",
@@ -20,7 +19,9 @@ module.exports = {
       }
     ]
   },
-  externals: [nodeExternals()],
+  externals:{
+    obsidian: "commonjs obsidian"
+  },
   target: "node",
   mode: "production"
 }

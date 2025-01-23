@@ -1,5 +1,6 @@
 import ObsidianCloud from "../main"
 import {App, PluginSettingTab, Setting} from "obsidian"
+import { doAuth } from "./auth"
 
 export class ObsidianCloudSettingTab extends PluginSettingTab {
   plugin: ObsidianCloud
@@ -35,7 +36,7 @@ export class ObsidianCloudSettingTab extends PluginSettingTab {
                .setButtonText("Authenticate")
                .onClick(async () =>{
                  console.log("Test Authenticate Button")
-                 // await this.plugin.authenticateWithDropbox()
+                 await doAuth()
                }))
   }
 }
