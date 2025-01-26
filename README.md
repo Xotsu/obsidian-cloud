@@ -17,7 +17,7 @@ A plugin that requires the lowest ammount of effort to have free cloud storage s
 - [ ] Work on desktop and mobile
 - [ ] Encrypt files
 - [ ] Encryption key management
-- [ ] Authentication with Dropbox
+- [x] Authentication with Dropbox
 - [ ] Error handling / User notification of failure
 - [ ] Offline syncing - queue changes if user is offline
 - [ ] Conflict resolution
