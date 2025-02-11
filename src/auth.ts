@@ -21,7 +21,7 @@ export default class DropboxAuthService{
     this.accessTokenStore = accessTokenStore;
     this.redirectUri = redirectUri;
     this.writeTokenStoreToPath = writeTokenStoreToPath
-    this.dropboxCodeVerifier = "" // TODO FIX THIS!!!
+    this.dropboxCodeVerifier = ""
   }
 
   public getDropbox(): Dropbox | undefined {

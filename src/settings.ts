@@ -31,8 +31,8 @@ export class ObsidianCloudSettingTab extends PluginSettingTab {
             )
   
   new Setting(containerEl)
-    .setName("Dropbox Authentication Token")
-    .setDesc("Token used for Dropbox authentication")
+    .setName("Dropbox App Key")
+    .setDesc("Key used for identifying Dropbox App")
     .addButton((button) => 
                button
                .setButtonText("Authenticate")
